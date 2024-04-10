@@ -1,0 +1,10 @@
+pnpm-lock.yaml
+**/**/*.js
+**/**/*.js.map
+**/**/*.d.ts
+coverage
+cdk.out
+.eslintrc.json
+.prettierignore
+.prettierrc.js
+
