@@ -1,7 +1,4 @@
-// import {
-//   SecretsManagerClient,
-//   DescribeSecretCommand,
-// } from '@aws-sdk/client-secrets-manager';
+import pg from 'pg';
 
 import {getSecret} from './secrets-helper';
 const currentRegion = process.env.AWS_REGION;
