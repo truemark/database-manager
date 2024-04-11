@@ -1,38 +1,56 @@
 import pg from 'pg';
-
 import {getSecret} from './secrets-helper';
-const currentRegion = process.env.AWS_REGION;
 
-interface EventParameters  {
+interface EventParameters {
   readonly databaseName?: string;
   readonly engine?: string;
   readonly operation?: string;
   readonly secretArn?: string;
 }
 
-// interface ReturnValue {
-//   readonly result: string;
-// }
-
-// Parameters: secret arn, operation
-
 export async function handler(event: EventParameters): Promise<string> {
   console.log(`event is ${JSON.stringify(event)}`);
-  const secretArn = event.secretArn;
-  console.log(`starting function: secretArn is ${secretArn}`);
 
+  try {
 
-  // secretValue = getSecret(secretArn);
-  const secretValue = getSecret(secretArn)
-    .then(secretValue => {
-      console.log('Secret:', secretValue);
-    })
-    .catch(err => {
-      console.error('Error fetching secret:', err);
+    const secretArn = event.secretArn;
+    if (!secretArn) {
+      throw new Error('Secret ARN is required');
+    }
+
+    console.log(`starting function: secretArn is ${secretArn}`);
+    const secret = await getSecret(secretArn);
+
+    console.log('Secret:', secret);
+
+    // Create a new client
+    const client = new pg.Client({
+      user: secret.username,
+      host: secret.host,
+      database: event.databaseName,
+      password: secret.password,
+      port: secret.port,
     });
 
+    // Connect to the database
+    await client.connect();
 
+    // Perform the operation
+    let result = 'Operation not supported';
+    if (event.operation === 'SELECT') {
+      const res = await client.query('SELECT $1::text as message', [
+        'Hello world!',
+      ]);
+      result = res.rows[0].message;
+    }
 
+    // Close the connection
+    await client.end();
 
-
+    console.log(`result is ${result}`);
+    return result;
+  } catch (err) {
+    console.error('Error:', err);
+    throw err; // Rethrow the error for Lambda to catch
+  }
 }

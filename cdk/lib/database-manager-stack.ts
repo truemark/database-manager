@@ -4,7 +4,14 @@ import {ExtendedStack, ExtendedStackProps} from 'truemark-cdk-lib/aws-cdk';
 import * as p from '../package.json';
 import {DatabaseManager} from './database-manager-construct';
 
-export interface DatabaseManagerStackProps extends ExtendedStackProps {}
+export interface DatabaseManagerStackProps extends ExtendedStackProps {
+  readonly vpcId: string;
+  readonly privateSubnetIds: string[];
+  readonly availabilityZones: string[];
+  readonly account?: string;
+  readonly region?: string;
+  readonly vpcCidrBlock: string;
+}
 
 export class DatabaseManagerStack extends ExtendedStack {
   constructor(scope: Construct, id: string, props: DatabaseManagerStackProps) {

@@ -2,6 +2,7 @@ import {Construct} from 'constructs';
 import {Function, Runtime} from 'aws-cdk-lib/aws-lambda';
 import {ExecutorFunction, ExecutorFunctionProps} from './executor-function';
 import * as path from 'path';
+import {Vpc} from 'aws-cdk-lib/aws-ec2';
 
 export class DatabaseManager extends Construct {
   constructor(scope: Construct, id: string, props: ExecutorFunctionProps) {
@@ -21,6 +22,10 @@ export class DatabaseManager extends Construct {
       environment: {
         // TAG_NAME: props.tagName,
       },
+      vpcId: props.vpcId,
+      availabilityZones: props.availabilityZones,
+      privateSubnetIds: props.privateSubnetIds,
+      vpcCidrBlock: props.vpcCidrBlock,
     };
 
     const executorFunction = new ExecutorFunction(
