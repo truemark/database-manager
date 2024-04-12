@@ -22,12 +22,13 @@ export async function handler(event: EventParameters): Promise<string> {
     const secret = await getSecret(secretArn);
 
     console.log('Secret:', secret);
+    const { Client } = require('pg');
 
     // Create a new client
-    const client = new pg.Client({
+    const client = new Client({
       user: secret.username,
-      host: secret.host,
-      database: event.databaseName,
+      host: secret.endpoint,
+      database: 'postgres',
       password: secret.password,
       port: secret.port,
     });

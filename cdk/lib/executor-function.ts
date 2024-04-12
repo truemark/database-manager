@@ -33,11 +33,17 @@ export class ExecutorFunction extends ExtendedNodejsFunction {
     super(scope, id, {
       runtime: Runtime.NODEJS_20_X,
       architecture: Architecture.ARM_64,
-      handler: 'handler', // TODO: don't hardcode this
+      handler: 'handler',
       memorySize: 512,
-      timeout: Duration.seconds(900),
+      timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       entry: path.join(__dirname, '..', '..', 'handlers', 'src', 'executor.ts'),
+      vpc: Vpc.fromVpcAttributes(scope, 'Vpc', {
+        vpcId: props.vpcId,
+        availabilityZones: props.availabilityZones,
+        privateSubnetIds: props.privateSubnetIds,
+        vpcCidrBlock: props.vpcCidrBlock,
+      }),
     });
     this.addToRolePolicy(
       new PolicyStatement({
@@ -50,8 +56,9 @@ export class ExecutorFunction extends ExtendedNodejsFunction {
         resources: ['*'],
       })
     );
-    const currentRegion = process.env.AWS_REGION;
 
+    // Create a reference to the VPC id passed in as a parameter.
+    // This is used to create the VPC endpoint.
     const vpc = Vpc.fromVpcAttributes(this, 'Vpc', {
       vpcId: props.vpcId,
       availabilityZones: props.availabilityZones,
@@ -59,6 +66,7 @@ export class ExecutorFunction extends ExtendedNodejsFunction {
       vpcCidrBlock: props.vpcCidrBlock,
     });
 
+    // TODO: change allowAllOutbound to false and add specific rules
     const vpcEndpointSecurityGroupProps: SecurityGroupProps = {
       vpc: vpc,
       securityGroupName: 'VpcEndpointForLambdaSecurityGroup',
@@ -73,8 +81,8 @@ export class ExecutorFunction extends ExtendedNodejsFunction {
       vpcEndpointSecurityGroupProps
     );
 
-
     // Add an interface VPC endpoint for Lambda
+    const currentRegion = process.env.AWS_REGION;
     const lambdaVpcEndpoint = new InterfaceVpcEndpoint(
       this,
       'LambdaVpcEndpoint',
