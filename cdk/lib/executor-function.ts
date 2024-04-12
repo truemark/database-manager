@@ -1,4 +1,4 @@
-import {NodejsFunction} from 'aws-cdk-lib/aws-lambda-nodejs';
+import {AssetHashType} from 'aws-cdk-lib';
 import {Construct} from 'constructs';
 import {Architecture, Runtime} from 'aws-cdk-lib/aws-lambda';
 import {Duration} from 'aws-cdk-lib';
@@ -31,19 +31,23 @@ export interface ExecutorFunctionProps extends ExtendedNodejsFunctionProps {
 export class ExecutorFunction extends ExtendedNodejsFunction {
   constructor(scope: Construct, id: string, props: ExecutorFunctionProps) {
     super(scope, id, {
-      runtime: Runtime.NODEJS_20_X,
       architecture: Architecture.ARM_64,
+      entry: path.join(__dirname, '..', '..', 'handlers', 'src', 'database-manager.ts'),
+      environment: {
+        NODE_EXTRA_CA_CERTS: '/var/runtime/ca-cert.pem',
+      },
       handler: 'handler',
-      memorySize: 512,
-      timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
-      entry: path.join(__dirname, '..', '..', 'handlers', 'src', 'executor.ts'),
+      memorySize: 512,
+      runtime: Runtime.NODEJS_20_X,
+      timeout: Duration.seconds(30),
       vpc: Vpc.fromVpcAttributes(scope, 'Vpc', {
         vpcId: props.vpcId,
         availabilityZones: props.availabilityZones,
         privateSubnetIds: props.privateSubnetIds,
         vpcCidrBlock: props.vpcCidrBlock,
       }),
+      ...props,
     });
     this.addToRolePolicy(
       new PolicyStatement({

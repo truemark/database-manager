@@ -31,6 +31,9 @@ export async function handler(event: EventParameters): Promise<string> {
       database: 'postgres',
       password: secret.password,
       port: secret.port,
+      ssl: {
+        rejectUnauthorized: true,
+      },
     });
 
     // Connect to the database
@@ -39,9 +42,7 @@ export async function handler(event: EventParameters): Promise<string> {
     // Perform the operation
     let result = 'Operation not supported';
     if (event.operation === 'SELECT') {
-      const res = await client.query('SELECT $1::text as message', [
-        'Hello world!',
-      ]);
+      const res = await client.query('SELECT NOW() as now');
       result = res.rows[0].message;
     }
 
