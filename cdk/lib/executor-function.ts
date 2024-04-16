@@ -1,29 +1,20 @@
-import {AssetHashType} from 'aws-cdk-lib';
 import {Construct} from 'constructs';
 import {Architecture, Runtime} from 'aws-cdk-lib/aws-lambda';
 import {Duration} from 'aws-cdk-lib';
 import {RetentionDays} from 'aws-cdk-lib/aws-logs';
 import * as path from 'path';
 import {PolicyStatement} from 'aws-cdk-lib/aws-iam';
-// import {
-//   ExtendedNodejsFunction,
-//   ExtendedNodejsFunctionProps,
-// } from 'truemark-cdk-lib/aws-lambda';
-import {aws_lambda_nodejs as NodejsFunction} from 'aws-cdk-lib';
-
+import {ExtendedNodejsFunction} from 'truemark-cdk-lib/aws-lambda';
 import {
-  IInterfaceVpcEndpointService,
   InterfaceVpcEndpoint,
   InterfaceVpcEndpointService,
-  Port,
-  Peer,
   SecurityGroup,
   SecurityGroupProps,
   Subnet,
   Vpc,
 } from 'aws-cdk-lib/aws-ec2';
 
-export interface ExecutorFunctionProps extends NodejsFunction {
+export interface ExecutorFunctionProps {
   readonly vpcId: string;
   readonly availabilityZones: string[];
   readonly privateSubnetIds: string[];

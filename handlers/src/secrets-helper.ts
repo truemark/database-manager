@@ -7,10 +7,18 @@ import {
 const currentRegion = process.env.AWS_REGION;
 const client = new SecretsManagerClient({region: currentRegion});
 
-export async function getSecret(secretName: string): Promise<string> {
+interface SecretDetails {
+  readonly username: string;
+  readonly password: string;
+  readonly endpoint: string;
+  readonly port: number;
+}
+
+export async function getSecret(
+  secretName: string
+): Promise<SecretDetails | null> {
   console.log(`starting getSecret: secretName is ${secretName}`);
   try {
-
     // Create the command
     const command = new GetSecretValueCommand({
       SecretId: secretName,
@@ -18,11 +26,10 @@ export async function getSecret(secretName: string): Promise<string> {
 
     // Send the request and get the response
     const response: GetSecretValueCommandOutput = await client.send(command);
-    const secretObject: string = response.SecretString
-      ? JSON.parse(response.SecretString)
-      : {};
-
-    return secretObject;
+    if (response.SecretString) {
+      return JSON.parse(response.SecretString) as SecretDetails;
+    }
+    return null;
   } catch (error) {
     console.error(`Error fetching secret value. Exiting. ${error}`);
     throw error;

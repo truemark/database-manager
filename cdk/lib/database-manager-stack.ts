@@ -1,7 +1,5 @@
-import * as cdk from 'aws-cdk-lib';
 import {Construct} from 'constructs';
 import {ExtendedStack, ExtendedStackProps} from 'truemark-cdk-lib/aws-cdk';
-import * as p from '../package.json';
 import {DatabaseManager} from './database-manager-construct';
 
 export interface DatabaseManagerStackProps extends ExtendedStackProps {

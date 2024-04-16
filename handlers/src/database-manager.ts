@@ -1,4 +1,3 @@
-import pg from 'pg';
 import {getSecret} from './secrets-helper';
 
 interface EventParameters {
@@ -8,11 +7,10 @@ interface EventParameters {
   readonly secretArn?: string;
 }
 
-export async function handler(event: EventParameters): Promise<string> {
+export async function handler(event: EventParameters): Promise<string | null> {
   console.log(`event is ${JSON.stringify(event)}`);
 
   try {
-
     const secretArn = event.secretArn;
     if (!secretArn) {
       throw new Error('Secret ARN is required');
@@ -20,37 +18,39 @@ export async function handler(event: EventParameters): Promise<string> {
 
     console.log(`starting function: secretArn is ${secretArn}`);
     const secret = await getSecret(secretArn);
+    if (secret !== null) {
+      console.log('Secret:', secret);
+      const {Client} = require('pg');
 
-    console.log('Secret:', secret);
-    const { Client } = require('pg');
+      // Create a new client
+      const client = new Client({
+        user: secret.username,
+        host: secret.endpoint,
+        database: 'postgres',
+        password: secret.password,
+        port: secret.port,
+        ssl: {
+          rejectUnauthorized: true,
+        },
+      });
 
-    // Create a new client
-    const client = new Client({
-      user: secret.username,
-      host: secret.endpoint,
-      database: 'postgres',
-      password: secret.password,
-      port: secret.port,
-      ssl: {
-        rejectUnauthorized: true,
-      },
-    });
+      // Connect to the database
+      await client.connect();
 
-    // Connect to the database
-    await client.connect();
+      // Perform the operation
+      let result = 'Operation not supported';
+      if (event.operation === 'SELECT') {
+        const res = await client.query('SELECT NOW() as now');
+        result = res.rows[0].message;
+      }
 
-    // Perform the operation
-    let result = 'Operation not supported';
-    if (event.operation === 'SELECT') {
-      const res = await client.query('SELECT NOW() as now');
-      result = res.rows[0].message;
+      // Close the connection
+      await client.end();
+
+      console.log(`result is ${result}`);
+      return result;
     }
-
-    // Close the connection
-    await client.end();
-
-    console.log(`result is ${result}`);
-    return result;
+    return null;
   } catch (err) {
     console.error('Error:', err);
     throw err; // Rethrow the error for Lambda to catch
