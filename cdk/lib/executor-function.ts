@@ -5,10 +5,12 @@ import {Duration} from 'aws-cdk-lib';
 import {RetentionDays} from 'aws-cdk-lib/aws-logs';
 import * as path from 'path';
 import {PolicyStatement} from 'aws-cdk-lib/aws-iam';
-import {
-  ExtendedNodejsFunction,
-  ExtendedNodejsFunctionProps,
-} from 'truemark-cdk-lib/aws-lambda';
+// import {
+//   ExtendedNodejsFunction,
+//   ExtendedNodejsFunctionProps,
+// } from 'truemark-cdk-lib/aws-lambda';
+import {aws_lambda_nodejs as NodejsFunction} from 'aws-cdk-lib';
+
 import {
   IInterfaceVpcEndpointService,
   InterfaceVpcEndpoint,
@@ -21,18 +23,25 @@ import {
   Vpc,
 } from 'aws-cdk-lib/aws-ec2';
 
-export interface ExecutorFunctionProps extends ExtendedNodejsFunctionProps {
+export interface ExecutorFunctionProps extends NodejsFunction {
   readonly vpcId: string;
   readonly availabilityZones: string[];
   readonly privateSubnetIds: string[];
   readonly vpcCidrBlock: string;
 }
 
-export class ExecutorFunction extends ExtendedNodejsFunction {
+export class ExecutorFunction extends NodejsFunction {
   constructor(scope: Construct, id: string, props: ExecutorFunctionProps) {
     super(scope, id, {
       architecture: Architecture.ARM_64,
-      entry: path.join(__dirname, '..', '..', 'handlers', 'src', 'database-manager.ts'),
+      entry: path.join(
+        __dirname,
+        '..',
+        '..',
+        'handlers',
+        'src',
+        'database-manager.ts'
+      ),
       environment: {
         NODE_EXTRA_CA_CERTS: '/var/runtime/ca-cert.pem',
       },
