@@ -21,7 +21,7 @@ export interface ExecutorFunctionProps {
   readonly vpcCidrBlock: string;
 }
 
-export class ExecutorFunction extends NodejsFunction {
+export class ExecutorFunction extends ExtendedNodejsFunction {
   constructor(scope: Construct, id: string, props: ExecutorFunctionProps) {
     super(scope, id, {
       architecture: Architecture.ARM_64,

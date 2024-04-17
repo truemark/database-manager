@@ -36,12 +36,24 @@ export async function handler(event: EventParameters): Promise<string | null> {
 
       // Connect to the database
       await client.connect();
-
+      console.log('Connected to the database');
       // Perform the operation
       let result = 'Operation not supported';
       if (event.operation === 'SELECT') {
-        const res = await client.query('SELECT NOW() as now');
-        result = res.rows[0].message;
+        try {
+          const res = await client.query(
+            'SELECT CURRENT_DATE AS "currentDate"'
+          );
+          if (res.rows.length > 0) {
+            result = res.rows[0].currentDate;
+            console.log(`date is ${res.rows}`);
+          } else {
+            result = 'No date returned';
+          }
+        } catch (error) {
+          console.error('Query failed:', error);
+          result = 'Query execution failed';
+        }
       }
 
       // Close the connection
