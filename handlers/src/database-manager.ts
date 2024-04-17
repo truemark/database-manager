@@ -18,8 +18,31 @@ export async function handler(event: EventParameters): Promise<string | null> {
 
     console.log(`starting function: secretArn is ${secretArn}`);
     const secret = await getSecret(secretArn);
+
     if (secret !== null) {
       console.log('Secret:', secret);
+
+      if (!secret.username) {
+        throw new Error(
+          `username is required in secret ${secretArn}. No such key was found.`
+        );
+      }
+      if (!secret.password) {
+        throw new Error(
+          `password is required in secret ${secretArn}. No such key was found.`
+        );
+      }
+      if (!secret.endpoint) {
+        throw new Error(
+          `endpoint is required in secret ${secretArn}. No such key was found.`
+        );
+      }
+      if (!secret.port) {
+        throw new Error(
+          `port is required in secret ${secretArn}. No such key was found.`
+        );
+      }
+
       const {Client} = require('pg');
 
       // Create a new client
