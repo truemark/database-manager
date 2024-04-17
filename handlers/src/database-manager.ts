@@ -1,10 +1,9 @@
-import {getSecret} from './secrets-helper';
+import {getSecret, checkSecretKeys} from './secrets-helper';
 
 interface EventParameters {
-  readonly databaseName?: string;
-  readonly engine?: string;
-  readonly operation?: string;
-  readonly secretArn?: string;
+  readonly databaseName: string;
+  readonly operation: string;
+  readonly secretArn: string;
 }
 
 export async function handler(event: EventParameters): Promise<string | null> {
@@ -12,8 +11,18 @@ export async function handler(event: EventParameters): Promise<string | null> {
 
   try {
     const secretArn = event.secretArn;
+
+    // Check that all required parameters are present
     if (!secretArn) {
-      throw new Error('Secret ARN is required');
+      throw new Error('Secret ARN is required in the event');
+    }
+
+    if (!event.operation) {
+      throw new Error('Operation is required in the event');
+    }
+
+    if (!event.databaseName) {
+      throw new Error('Database name is required in the event');
     }
 
     console.log(`starting function: secretArn is ${secretArn}`);
@@ -22,34 +31,18 @@ export async function handler(event: EventParameters): Promise<string | null> {
     if (secret !== null) {
       console.log('Secret:', secret);
 
-      if (!secret.username) {
-        throw new Error(
-          `username is required in secret ${secretArn}. No such key was found.`
-        );
+      if (
+        !checkSecretKeys(secret, ['username', 'password', 'endpoint', 'port'])
+      ) {
+        console.log('Secret keys are present');
       }
-      if (!secret.password) {
-        throw new Error(
-          `password is required in secret ${secretArn}. No such key was found.`
-        );
-      }
-      if (!secret.endpoint) {
-        throw new Error(
-          `endpoint is required in secret ${secretArn}. No such key was found.`
-        );
-      }
-      if (!secret.port) {
-        throw new Error(
-          `port is required in secret ${secretArn}. No such key was found.`
-        );
-      }
-
       const {Client} = require('pg');
 
       // Create a new client
       const client = new Client({
         user: secret.username,
         host: secret.endpoint,
-        database: 'postgres',
+        database: event.databaseName,
         password: secret.password,
         port: secret.port,
         ssl: {

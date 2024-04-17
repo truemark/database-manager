@@ -35,3 +35,24 @@ export async function getSecret(
     throw error;
   }
 }
+
+export async function checkSecretKeys(
+  secret: SecretDetails,
+  keys: string[]
+): Promise<boolean> {
+  console.log(`starting checkSecretKeys: keys are ${keys}`);
+  try {
+    if (secret === null) {
+      return false;
+    }
+    for (const key of keys) {
+      if (!(key in secret)) {
+        return false;
+      }
+    }
+    return true;
+  } catch (error) {
+    console.error(`Error fetching secret value. Exiting. ${error}`);
+    throw error;
+  }
+}
