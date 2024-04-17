@@ -15,12 +15,47 @@ export async function handler(event: EventParameters): Promise<string | null> {
     if (!secretArn) {
       throw new Error('Secret ARN is required');
     }
+    if (!event.operation) {
+      throw new Error('Operation is required');
+    }
 
     console.log(`starting function: secretArn is ${secretArn}`);
     const secret = await getSecret(secretArn);
     if (secret !== null) {
       console.log('Secret:', secret);
       const {Client} = require('pg');
+
+      // Validate the secret, ensure it has the keys required to connect to the database
+      try {
+        if (secret.port === null || secret.port === undefined) {
+          console.error(
+            `Port is required in secret ${secretArn}. No such key was found.`
+          );
+        }
+
+        if (secret.endpoint === null || secret.endpoint === undefined) {
+          console.error(
+            `endpoint is required in secret ${secretArn}. No such key was found.`
+          );
+        }
+
+        if (secret.username === null || secret.username === undefined) {
+          console.error(
+            `username is required in secret ${secretArn}. No such key was found.`
+          );
+        }
+
+        if (secret.password === null || secret.password === undefined) {
+          console.error(
+            `password is required in secret ${secretArn}. No such key was found.`
+          );
+        }
+      } catch (error) {
+        console.error(`Secret ${secretArn} is missing required keys. ${error}`);
+        throw new Error(
+          `Secret ${secretArn} is missing required keys. ${error}`
+        );
+      }
 
       // Create a new client
       const client = new Client({
