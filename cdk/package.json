@@ -5,7 +5,7 @@
     "cdk": "bin/database-manager.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build --prefix ../handlers && tsc",
     "postbuild": "prettier --check . && gts lint",
     "watch": "node watch.js",
     "test": "jest --coverage --collectCoverageFrom='src/**/*.{ts,tsx}'",
