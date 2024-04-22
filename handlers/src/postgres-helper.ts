@@ -44,10 +44,10 @@ export class DatabaseClient implements IDatabaseClient {
       `starting createDatabase: creating database named ${databaseName} meow`
     );
     try {
-      this.connect();
-      await this.client.query(`CREATE DATABASE ${databaseName}`);
-      this.end();
-      return `Database ${databaseName} created`;
+      await this.connect();
+      const res = await this.client.query(`CREATE DATABASE ${databaseName}`);
+      await this.end();
+      return `Database ${databaseName} created. Result is ${res}`;
     } catch (error) {
       console.error(`Error creating database. Exiting. ${error}`);
       throw error;
@@ -57,10 +57,10 @@ export class DatabaseClient implements IDatabaseClient {
   public async selectDate(): Promise<string | null> {
     console.log('starting selectDate');
     try {
+      await this.connect();
       const res = await this.client.query('SELECT NOW()');
-      console.log('res:', res);
-      const dateString = res.rows[0].now; // Adjust this based on the actual structure of your query result
-      return dateString;
+      await this.end();
+      return res.rows[0].now;
     } catch (error) {
       console.error(`Error selecting date. Exiting. ${error}`);
       throw error;

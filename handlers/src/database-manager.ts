@@ -31,7 +31,8 @@ export async function handler(event: IEvent): Promise<string | null> {
       const pg = new PgDatabaseClient({
         user: secret.username,
         host: secret.endpoint,
-        database: event[EventParameters.DATABASENAME], // Use enum value to access property
+        // database: event[EventParameters.DATABASENAME], // Use enum value to access property
+        database: 'postgres',
         password: secret.password,
         port: secret.port,
         ssl: {rejectUnauthorized: false},
@@ -45,6 +46,7 @@ export async function handler(event: IEvent): Promise<string | null> {
           break;
         case 'SELECT':
           result = await pg.selectDate();
+          console.log(`Result is ${result}`);
           break;
         default:
           console.error('Operation not supported');
